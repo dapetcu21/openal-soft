@@ -26,6 +26,14 @@
 #include "AL/al.h"
 #include "AL/alc.h"
 
+enum
+{
+    O32_LITTLE_ENDIAN = 0x03020100ul,
+    O32_BIG_ENDIAN = 0x00010203ul,
+    O32_PDP_ENDIAN = 0x01000302ul
+};
+static const union { unsigned char bytes[4]; uint32_t value; } o32_host_order = { { 0, 1, 2, 3 } };
+#define O32_HOST_ORDER (o32_host_order.value)
 
 #include <SLES/OpenSLES.h>
 #if 1
@@ -152,9 +160,15 @@ static const char *res_str(SLresult result)
         case SL_RESULT_UNKNOWN_ERROR: return "Unknown error";
         case SL_RESULT_OPERATION_ABORTED: return "Operation aborted";
         case SL_RESULT_CONTROL_LOST: return "Control lost";
+        #ifdef SL_RESULT_READONLY
         case SL_RESULT_READONLY: return "ReadOnly";
+        #endif
+        #ifdef SL_RESULT_ENGINEOPTION_UNSUPPORTED
         case SL_RESULT_ENGINEOPTION_UNSUPPORTED: return "Engine option unsupported";
+        #endif
+        #ifdef SL_RESULT_SOURCE_SINK_INCOMPATIBLE
         case SL_RESULT_SOURCE_SINK_INCOMPATIBLE: return "Source/Sink incompatible";
+        #endif
     }
     return "Unknown error code";
 }
@@ -293,7 +307,7 @@ static ALCboolean opensl_reset_playback(ALCdevice *Device)
     format_pcm.bitsPerSample = BytesFromDevFmt(Device->FmtType) * 8;
     format_pcm.containerSize = format_pcm.bitsPerSample;
     format_pcm.channelMask = GetChannelMask(Device->FmtChans);
-    format_pcm.endianness = SL_BYTEORDER_NATIVE;
+    format_pcm.endianness = (O32_HOST_ORDER == O32_BIG_ENDIAN) ? SL_BYTEORDER_BIGENDIAN : SL_BYTEORDER_LITTLEENDIAN;
 
     audioSrc.pLocator = &loc_bufq;
     audioSrc.pFormat = &format_pcm;
