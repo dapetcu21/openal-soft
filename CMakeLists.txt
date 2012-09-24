@@ -751,10 +751,13 @@ CONFIGURE_FILE(
 
 # Build a library
 ADD_LIBRARY(${LIBNAME} ${LIBTYPE} ${OPENAL_OBJS} ${ALC_OBJS})
+IF(NOT ANDROID)
+    SET(VERSION_PROPS VERSION ${LIB_VERSION}.0 SOVERSION ${LIB_MAJOR_VERSION})
+ENDIF()
 SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES DEFINE_SYMBOL AL_BUILD_LIBRARY
                                             COMPILE_FLAGS -DAL_ALEXT_PROTOTYPES
-                                            VERSION ${LIB_VERSION}.0
-                                            SOVERSION ${LIB_MAJOR_VERSION})
+                                            ${VERSION_PROPS}
+                                            )
 IF(WIN32 AND NOT LIBTYPE STREQUAL "STATIC")
     SET_TARGET_PROPERTIES(${LIBNAME} PROPERTIES PREFIX "")
 ENDIF()
