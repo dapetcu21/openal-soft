@@ -1,4 +1,6 @@
 build*
+bin
+libs
 winbuild
 include/sndio.h
 include/sys
